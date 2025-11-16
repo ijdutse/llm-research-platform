@@ -23,5 +23,5 @@ A comprehensive platform for collecting research data on user interactions with 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-org/llm-research-platform.git
+   git clone https://github.com/ijdutse/llm-research-platform.git
    cd llm-research-platform
