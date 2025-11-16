@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendBtn = document.getElementById('send-btn');
     const clearBtn = document.getElementById('clear-btn');
     const surveyContainer = document.getElementById('survey-container');
-    const surveyOptions = document.querySelectorAll('.survey-option');
+    const surveyCheckboxes = document.querySelectorAll('.survey-options input[type="checkbox"]');
     const surveyComment = document.getElementById('survey-comment');
     const surveySubmitBtn = document.getElementById('survey-submit-btn');
     const errorMessageDiv = document.getElementById('error-message'); // New
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let history = []; // Array to store conversation history
     let currentInteractionId = null;
-    let selectedSurveyOption = null;
+    let selectedFeedbackOptions = [];
 
     const generateUUID = () => {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -171,13 +171,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const hideSurvey = () => {
         surveyContainer.style.display = 'none';
         surveyComment.value = '';
-        surveyOptions.forEach(opt => opt.classList.remove('selected'));
-        selectedSurveyOption = null;
+        surveyCheckboxes.forEach(checkbox => checkbox.checked = false);
+        selectedFeedbackOptions = [];
     };
 
     const handleSurveySubmit = async () => {
-        if (!selectedSurveyOption) {
-            alert('Please select an option.');
+        selectedFeedbackOptions = Array.from(surveyCheckboxes)
+                                    .filter(checkbox => checkbox.checked)
+                                    .map(checkbox => checkbox.value);
+
+        if (selectedFeedbackOptions.length === 0) {
+            alert('Please select at least one feedback option.');
             return;
         }
 
@@ -191,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({
                     interaction_id: currentInteractionId,
-                    rating: selectedSurveyOption,
+                    feedback_options: selectedFeedbackOptions,
                     comment: comment,
                 }),
             });
@@ -205,15 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
     sendBtn.addEventListener('click', handleSend);
     clearBtn.addEventListener('click', handleClearChat);
     surveySubmitBtn.addEventListener('click', handleSurveySubmit);
-
-    surveyOptions.forEach(option => {
-        option.addEventListener('click', () => {
-            surveyOptions.forEach(opt => opt.classList.remove('selected'));
-
-            option.classList.add('selected');
-            selectedSurveyOption = option.dataset.value;
-        });
-    });
 
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {

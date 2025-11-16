@@ -40,7 +40,7 @@ try:
     spreadsheet = gc.open(GOOGLE_SHEET_NAME)
     worksheet = spreadsheet.sheet1
     # Set header row if the sheet is empty or doesn't match
-    header = ["Timestamp", "Interaction ID", "User Message", "LLM Response", "Rating", "Comment"]
+    header = ["Timestamp", "Interaction ID", "User Message", "LLM Response", "Feedback Options", "Comment"]
     if not worksheet.get_all_values() or worksheet.row_values(1) != header:
         worksheet.clear()
         worksheet.append_row(header)
@@ -132,22 +132,21 @@ def survey():
     """Endpoint to handle survey submission."""
     data = request.get_json()
     interaction_id = data.get('interaction_id')
-    rating = data.get('rating')
+    feedback_options = data.get('feedback_options', [])
     comment = data.get('comment', '') # Default to empty string
 
-    if not interaction_id or not rating:
-        return jsonify({"error": "Missing interaction ID or rating"}), 400
+    if not interaction_id or not feedback_options:
+        return jsonify({"error": "Missing interaction ID or feedback options"}), 400
         
-    if rating not in ["agree", "neutral", "disagree"]:
-        return jsonify({"error": "Invalid rating value"}), 400
-
     if worksheet:
         try:
             # Find the row with the matching interaction ID and update it
             cell = worksheet.find(interaction_id)
             if cell:
-                worksheet.update_cell(cell.row, 5, rating)
-                worksheet.update_cell(cell.row, 6, comment)
+                # Join feedback options into a comma-separated string
+                feedback_str = ", ".join(feedback_options)
+                worksheet.update_cell(cell.row, 5, feedback_str) # Column 5 is "Feedback Options"
+                worksheet.update_cell(cell.row, 6, comment)     # Column 6 is "Comment"
             else:
                 # This should not happen if the chat is logged correctly
                 print(f"Could not find interaction ID {interaction_id} to update survey data.")

@@ -29,13 +29,15 @@
         </div>
         <div class="survey-container" id="survey-container">
             <h3>Response Feedback</h3>
-            <p>How much do you agree with the last response?</p>
+            <p>The present response you receive is:</p>
             <div class="survey-options">
-                <button class="survey-option" data-value="disagree">Disagree</button>
-                <button class="survey-option" data-value="neutral">Neutral</button>
-                <button class="survey-option" data-value="agree">Agree</button>
+                <label><input type="checkbox" name="feedback" value="Accurate"> Accurate</label>
+                <label><input type="checkbox" name="feedback" value="Reliable"> Reliable</label>
+                <label><input type="checkbox" name="feedback" value="Relatable"> Relatable</label>
+                <label><input type="checkbox" name="feedback" value="Clear & Useful"> Clear & Useful</label>
+                <label><input type="checkbox" name="feedback" value="Indepth"> Indepth</label>
             </div>
-            <textarea id="survey-comment" placeholder="Additional comments..."></textarea>
+            <textarea id="survey-comment" placeholder="What did you think about your interaction asking the LLM health-related questions? Provide any additional comments below:"></textarea>
             <button id="survey-submit-btn">Submit Feedback</button>
         </div>
     </div>
