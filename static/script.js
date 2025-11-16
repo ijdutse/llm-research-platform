@@ -180,11 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                     .filter(checkbox => checkbox.checked)
                                     .map(checkbox => checkbox.value);
 
-        if (selectedFeedbackOptions.length === 0) {
-            alert('Please select at least one feedback option.');
-            return;
-        }
-
         const comment = surveyComment.value.trim();
         
         try {

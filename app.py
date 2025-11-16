@@ -28,6 +28,9 @@ SYSTEM_PROMPT = os.getenv("SYSTEM_PROMPT", "You are a helpful research assistant
 GOOGLE_SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME", "LLM_Interactions")
 HISTORY_MAX_TOKENS = int(os.getenv("HISTORY_MAX_TOKENS", 2048))
 
+# Define feedback options for consistent use
+FEEDBACK_OPTIONS = ["Accurate", "Reliable", "Relatable", "Clear & Useful", "Indepth"]
+
 # 2. Google Sheets API Credentials
 # - Enable the Google Sheets API and Google Drive API in your Google Cloud project.
 # - Create a service account and download its JSON key file.
@@ -45,14 +48,26 @@ try:
         worksheet.clear()
         worksheet.append_row(header)
         
+    # Initialize Feedback Summary Sheet
+    try:
+        summary_worksheet = spreadsheet.worksheet("Feedback Summary")
+    except gspread.exceptions.WorksheetNotFound:
+        summary_worksheet = spreadsheet.add_worksheet(title="Feedback Summary", rows="100", cols="20")
+        summary_worksheet.append_row(["Option", "Count", "Percentage"])
+        for option in FEEDBACK_OPTIONS:
+            summary_worksheet.append_row([option, 0, "0.00%"])
+        summary_worksheet.append_row(["Total Submissions", 0, ""])
+
 except FileNotFoundError:
     print("\n!!! WARNING: 'service_account.json' not found. Google Sheets logging will fail. !!!")
     print("Please follow the setup instructions in the README to enable data logging.\n")
     worksheet = None
+    summary_worksheet = None
 except gspread.exceptions.SpreadsheetNotFound:
     print(f"\n!!! WARNING: Google Sheet '{GOOGLE_SHEET_NAME}' not found. Logging will fail. !!!")
     print("Please create a sheet with that name and share it with your service account.\n")
     worksheet = None
+    summary_worksheet = None
 
 
 @app.route('/')
@@ -138,18 +153,59 @@ def survey():
     if not interaction_id or not feedback_options:
         return jsonify({"error": "Missing interaction ID or feedback options"}), 400
         
-    if worksheet:
+    if worksheet and summary_worksheet:
         try:
-            # Find the row with the matching interaction ID and update it
+            # Update main interaction log sheet
             cell = worksheet.find(interaction_id)
             if cell:
-                # Join feedback options into a comma-separated string
                 feedback_str = ", ".join(feedback_options)
-                worksheet.update_cell(cell.row, 5, feedback_str) # Column 5 is "Feedback Options"
-                worksheet.update_cell(cell.row, 6, comment)     # Column 6 is "Comment"
+                worksheet.update_cell(cell.row, 5, feedback_str)
+                worksheet.update_cell(cell.row, 6, comment)
             else:
-                # This should not happen if the chat is logged correctly
-                print(f"Could not find interaction ID {interaction_id} to update survey data.")
+                print(f"Could not find interaction ID {interaction_id} to update survey data in main sheet.")
+
+            # Update Feedback Summary sheet
+            summary_data = summary_worksheet.get_all_values()
+            summary_header = summary_data[0]
+            summary_rows = summary_data[1:]
+
+            # Create a dictionary for easier lookup and update
+            summary_dict = {row[0]: {'count': int(row[1]), 'row_idx': i + 1} for i, row in enumerate(summary_rows) if row[0] in FEEDBACK_OPTIONS}
+            total_submissions_row_idx = -1
+            for i, row in enumerate(summary_rows):
+                if row[0] == "Total Submissions":
+                    total_submissions_row_idx = i + 1
+                    break
+            
+            total_submissions = int(summary_rows[total_submissions_row_idx - 1][1]) if total_submissions_row_idx != -1 else 0
+
+            # Increment counts for selected options
+            for option in feedback_options:
+                if option in summary_dict:
+                    summary_dict[option]['count'] += 1
+            
+            total_submissions += 1
+
+            # Prepare data for batch update
+            updates = []
+            for option in FEEDBACK_OPTIONS:
+                if option in summary_dict:
+                    count = summary_dict[option]['count']
+                    percentage = (count / total_submissions * 100) if total_submissions > 0 else 0.0
+                    updates.append({
+                        'range': f'B{summary_dict[option]["row_idx"] + 1}:C{summary_dict[option]["row_idx"] + 1}',
+                        'values': [[count, f"{percentage:.2f}%"]]
+                    })
+            
+            # Update Total Submissions row
+            if total_submissions_row_idx != -1:
+                updates.append({
+                    'range': f'B{total_submissions_row_idx + 1}',
+                    'values': [[total_submissions]]
+                })
+
+            if updates:
+                summary_worksheet.batch_update(updates)
 
         except Exception as e:
             print(f"Could not write survey data to Google Sheet. Error: {e}")
