@@ -24,7 +24,7 @@ limiter = Limiter(
 # Ensure you have an OPENAI_API_KEY in your .env file
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
-SYSTEM_PROMPT = os.getenv("SYSTEM_PROMPT", "You are a helpful research assistant.")
+SYSTEM_PROMPT = os.getenv("SYSTEM_PROMPT", "You are a helpful research assistant. You are based on OpenAI's GPT-3.5 Turbo model.")
 GOOGLE_SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME", "LLM_Interactions")
 HISTORY_MAX_TOKENS = int(os.getenv("HISTORY_MAX_TOKENS", 2048))
 
