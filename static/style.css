@@ -335,3 +335,24 @@ body {
 .copy-btn:hover {
     background-color: #e0e0e0;
 }
+
+/* Basic styling for error messages */
+.error-message {
+    color: #d8000c;
+    background-color: #ffbaba;
+    border: 1px solid #d8000c;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Basic styling for loading indicator */
+.loading-indicator {
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-style: italic;
+    color: #666;
+}

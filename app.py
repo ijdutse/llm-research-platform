@@ -5,11 +5,19 @@ import openai
 from flask import Flask, request, jsonify, render_template, Response
 from openai import OpenAI
 from dotenv import load_dotenv
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 # Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__, static_folder='static', template_folder='.')
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["60 per hour", "2 per second"],
+    storage_uri="memory://", # Use memory for simplicity, consider Redis for production
+)
 
 # --- CONFIGURATION ---
 # 1. OpenAI API Key
@@ -66,6 +74,7 @@ def truncate_history(history):
     return history
 
 @app.route('/chat', methods=['POST'])
+@limiter.limit("60 per hour")
 def chat():
     """Endpoint to handle chat interaction with the LLM."""
     user_message = request.json.get("message")

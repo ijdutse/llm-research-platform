@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const surveyOptions = document.querySelectorAll('.survey-option');
     const surveyComment = document.getElementById('survey-comment');
     const surveySubmitBtn = document.getElementById('survey-submit-btn');
+    const errorMessageDiv = document.getElementById('error-message'); // New
+    const loadingIndicatorDiv = document.getElementById('loading-indicator'); // New
 
     let history = []; // Array to store conversation history
     let currentInteractionId = null;
@@ -37,17 +39,38 @@ document.addEventListener('DOMContentLoaded', () => {
         return messageElement;
     };
 
+    // New helper functions for error and loading
+    const showError = (message) => {
+        errorMessageDiv.textContent = message;
+        errorMessageDiv.style.display = 'block';
+    };
+
+    const clearError = () => {
+        errorMessageDiv.textContent = '';
+        errorMessageDiv.style.display = 'none';
+    };
+
+    const showLoading = () => {
+        loadingIndicatorDiv.style.display = 'block';
+        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to show indicator
+    };
+
+    const hideLoading = () => {
+        loadingIndicatorDiv.style.display = 'none';
+    };
+
     const handleSend = async () => {
         const message = userInput.value.trim();
         if (!message) return;
 
+        clearError(); // Clear previous errors
         currentInteractionId = generateUUID();
         addMessage(message, 'user');
         history.push({ role: 'user', content: message });
 
         userInput.value = '';
         userInput.style.height = 'auto';
-        setLoadingState(true);
+        setLoadingState(true); // This will now show the new loading indicator
         hideSurvey();
 
         try {
@@ -59,11 +82,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ message: message, history: history.slice(0, -1), interaction_id: currentInteractionId }),
             });
 
-            setLoadingState(false);
+            setLoadingState(false); // Hide loading indicator
 
             if (!response.ok) {
                 const errorData = await response.json();
-                addMessage(errorData.error || 'An unknown error occurred.', 'llm', 'error');
+                showError(errorData.error || 'An unknown error occurred.'); // Display user-friendly error
                 history.pop();
                 return;
             }
@@ -92,9 +115,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
         } catch (error) {
-            setLoadingState(false);
+            setLoadingState(false); // Hide loading indicator
             console.error('Error:', error);
-            addMessage('Failed to connect to the server. Please try again later.', 'llm', 'error');
+            showError('Failed to connect to the server. Please try again later.'); // Display generic error
             history.pop();
         }
     };
@@ -103,30 +126,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isLoading) {
             userInput.disabled = true;
             sendBtn.disabled = true;
-            showTypingIndicator();
+            showLoading(); // Use new showLoading
         } else {
             userInput.disabled = false;
             sendBtn.disabled = false;
-            removeTypingIndicator();
+            hideLoading(); // Use new hideLoading
             userInput.focus();
         }
     };
 
-    const showTypingIndicator = () => {
-        const typingElement = document.createElement('div');
-        typingElement.classList.add('message', 'llm-message', 'typing-indicator');
-        typingElement.innerHTML = '<span></span><span></span><span></span>';
-        typingElement.id = 'typing-indicator';
-        chatBox.appendChild(typingElement);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    };
-
-    const removeTypingIndicator = () => {
-        const typingElement = document.getElementById('typing-indicator');
-        if (typingElement) {
-            typingElement.remove();
-        }
-    };
+    // Remove showTypingIndicator and removeTypingIndicator functions
+    // as they are replaced by the new loading indicator logic.
 
     const updateCodeBlocks = (messageElement) => {
         const codeBlocks = messageElement.querySelectorAll('pre');
@@ -150,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatBox.innerHTML = '';
         history = [];
         hideSurvey();
+        clearError(); // Clear errors on chat clear
         addMessage('Hello! How can I assist you with your research today?', 'llm');
     };
 
