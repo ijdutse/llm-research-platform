@@ -1,0 +1,10 @@
+# Environment variables
+.env
+
+# Google Cloud credentials
+service_account.json
+
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
