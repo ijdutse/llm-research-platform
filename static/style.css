@@ -176,10 +176,23 @@ body {
 }
 
 .error-message {
-    background-color: #ffebee;
-    color: #d32f2f;
-    align-self: flex-start;
-    border-bottom-left-radius: 4px;
+    color: #d8000c;
+    background-color: #ffbaba;
+    border: 1px solid #d8000c;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Basic styling for loading indicator */
+.loading-indicator {
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-style: italic;
+    color: #666;
 }
 
 .message p {
@@ -334,6 +347,127 @@ body {
 
 .copy-btn:hover {
     background-color: #e0e0e0;
+}
+
+/* --- Responsive Design --- */
+
+/* For screens smaller than 768px (tablets and smaller) */
+@media (max-width: 768px) {
+    body {
+        height: auto; /* Allow body to grow */
+        padding: 10px;
+    }
+
+    .main-container {
+        flex-direction: column; /* Stack chat and survey vertically */
+        width: 100%;
+        height: auto;
+        max-height: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .chat-container {
+        width: 100%;
+        height: 70vh; /* Give chat more height on mobile */
+        max-height: none;
+    }
+
+    .survey-container {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid #ddd; /* Add border to separate from chat */
+        height: auto;
+        padding: 15px;
+    }
+
+    .chat-header h2 {
+        font-size: 1.2rem;
+    }
+
+    .chat-header p {
+        font-size: 0.7rem;
+    }
+
+    #clear-btn {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+    }
+
+    .chat-box {
+        padding: 10px;
+    }
+
+    .message {
+        max-width: 90%; /* Allow messages to take more width */
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+
+    .chat-input-box {
+        padding: 10px;
+    }
+
+    #user-input {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+    }
+
+    #send-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    #send-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* For screens smaller than 480px (phones) */
+@media (max-width: 480px) {
+    .main-container {
+        width: 100%;
+        margin: 0;
+    }
+
+    .chat-container {
+        height: 65vh;
+    }
+
+    .survey-container {
+        padding: 10px;
+    }
+
+    .survey-options {
+        flex-direction: column; /* Stack survey options vertically */
+    }
+
+    .survey-option {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    #survey-submit-btn {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+
+    .chat-header {
+        padding: 12px;
+    }
+
+    .chat-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .chat-header p {
+        display: none; /* Hide subtitle on very small screens */
+    }
+
+    #clear-btn {
+        left: 8px;
+    }
 }
 
 /* Basic styling for error messages */
